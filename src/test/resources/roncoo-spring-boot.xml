@@ -11,6 +11,10 @@
 		<!-- 插件配置 -->
 		<!-- 序列化插件 -->
 		<plugin type="org.mybatis.generator.plugins.SerializablePlugin" />
+		<!-- 缓存插件 -->
+		<!-- <plugin type="org.mybatis.generator.plugins.CachePlugin" /> -->
+		<!-- Dao插件 -->
+		<!-- <plugin type="org.mybatis.generator.plugins.DaoPlugin" /> -->
 		<!-- 分页插件 -->
 		<plugin type="org.mybatis.generator.plugins.PaginationPlugin" />
 		<!-- ToString插件 -->
@@ -55,7 +59,8 @@
 		</javaClientGenerator>
 		
 		<!-- 生成全部的表 -->
-		<table tableName="%" />
+		<!-- <table tableName="%" /> -->
+		<table tableName="ryid_pool" />
 		
 	</context>
 </generatorConfiguration>

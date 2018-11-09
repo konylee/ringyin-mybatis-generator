@@ -1,4 +1,4 @@
-package com.roncoo.test;
+package com.ringyin.generator.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,18 +15,19 @@ import org.mybatis.generator.exception.XMLParserException;
 import org.mybatis.generator.internal.DefaultShellCallback;
 
 /**
- * 龙果教程-Spring Boot全集
- * 
+ * 龙果开源-后台管理系统
  * @author wujing
  */
-public class RoncooSpringBoot {
-	private static Logger logger = Logger.getLogger(RoncooSpringBoot.class);
+public class RoncooAdminlteSpringmvc {
+	private static Logger logger = Logger.getLogger(RoncooAdminlteSpringmvc.class);
 
-	public static void main(String[] args) throws IOException, XMLParserException, InvalidConfigurationException, SQLException, InterruptedException {
+	public static void main(String[] args)
+			throws IOException, XMLParserException, InvalidConfigurationException, SQLException, InterruptedException {
 		logger.info("Start generator ...");
 		List<String> warnings = new ArrayList<String>();
 		boolean overwrite = true; // 是否覆盖原来的文件
-		File configFile = new File("D:/workspace-roncoo/roncoo-mybatis-generator/src/test/resources/roncoo-spring-boot.xml");
+		File configFile = new File(
+				"D:/devspace/roncoo/roncoo-mybatis-generator/src/test/resources/roncoo-adminlte-springmvc.xml");
 		ConfigurationParser cp = new ConfigurationParser(warnings);
 		Configuration config = cp.parseConfiguration(configFile);
 		DefaultShellCallback callback = new DefaultShellCallback(overwrite);

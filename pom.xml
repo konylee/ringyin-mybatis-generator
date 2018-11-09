@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.roncoo</groupId>
-	<artifactId>roncoo-mybatis-generator</artifactId>
+	<groupId>com.ringyin</groupId>
+	<artifactId>ringyin-mybatis-generator</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
 
@@ -11,20 +11,30 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
+		<log4j.level>debug</log4j.level>
 		<log4j.version>1.2.17</log4j.version>
 		<commons.beanutils.version>1.9.3</commons.beanutils.version>
 
-		<jdk.version>1.7</jdk.version>
+		<jdk.version>1.8</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
 		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.4.6</version>
+		</dependency>
+		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>net.oschina.j2cache</groupId>
+			<artifactId>j2cache-mybatis</artifactId>
+			<version>2.3.17-release</version>
+		</dependency>
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
@@ -34,7 +44,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>roncoo-mybatis-generator</finalName>
+		<finalName>ringyin-mybatis-generator</finalName>
 
 		<resources>
 			<resource>
