@@ -1,6 +1,7 @@
 package org.mybatis.generator.plugins;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.mybatis.generator.api.GeneratedJavaFile;
@@ -22,8 +23,9 @@ import org.mybatis.generator.internal.util.StringUtility;
  */
 public class DaoPlugin extends PluginAdapter {
 
-	private String pagePath = "org.mybatis.generator.custom.util.Page";
+	private String pagePath = "org.mybatis.generator.custom.Jui.Page";
 	private String pageUtilPath = "org.mybatis.generator.custom.util.PageUtil";
+
 	private FullyQualifiedJavaType serviceType;
 	private FullyQualifiedJavaType daoType;
 	private FullyQualifiedJavaType interfaceType;
@@ -62,6 +64,12 @@ public class DaoPlugin extends PluginAdapter {
 	private boolean enableCount = false;
 	private boolean enablePage = false;
 
+	private FullyQualifiedJavaType daoRootInterfaceType;
+	private FullyQualifiedJavaType daoRootClassType;
+	private String daoRootInterface;
+	private String daoRootClass;
+	private boolean enableDaoRootClass = false;
+
 	public DaoPlugin() {
 		super();
 		methods = new ArrayList<Method>();
@@ -75,6 +83,9 @@ public class DaoPlugin extends PluginAdapter {
 
 		pagePath = properties.getProperty("pagePath");
 		pageUtilPath = properties.getProperty("pageUtilPath");
+
+		daoRootInterface = properties.getProperty("daoRootInterface");
+		daoRootClass = properties.getProperty("daoRootClass");
 
 		String enableAnnotation = properties.getProperty("enableAnnotation");
 
@@ -93,6 +104,7 @@ public class DaoPlugin extends PluginAdapter {
 		String enableSelectByPrimaryKey = properties.getProperty("enableSelectByPrimaryKey"); // getById
 		String enableCount = properties.getProperty("enableCount");
 		String enablePage = properties.getProperty("enablePage");
+		String enableDaoRootClass = properties.getProperty("enableDaoRootClass");
 
 		if (StringUtility.stringHasValue(enableAnnotation)) {
 			this.enableAnnotation = StringUtility.isTrue(enableAnnotation);
@@ -143,6 +155,9 @@ public class DaoPlugin extends PluginAdapter {
 		if (StringUtility.stringHasValue(enablePage)) {
 			this.enablePage = StringUtility.isTrue(enablePage);
 		}
+		if (StringUtility.stringHasValue(enableDaoRootClass)) {
+			this.enableDaoRootClass = StringUtility.isTrue(enableDaoRootClass);
+		}
 
 		this.daoPack = properties.getProperty("targetPackage");
 		this.daoImplPack = properties.getProperty("implementationPackage");
@@ -164,35 +179,48 @@ public class DaoPlugin extends PluginAdapter {
 		List<GeneratedJavaFile> files = new ArrayList<GeneratedJavaFile>();
 		String table = introspectedTable.getBaseRecordType();
 		String tableName = table.replaceAll(this.pojoUrl + ".", "");
-		// 【com.roncoo.service.PetDao】
+		// 【com.ringyin.service.PetDao】
 		interfaceType = new FullyQualifiedJavaType(daoPack + "." + tableName + "Dao");
 
-		// 【com.roncoo.mapper.PetMapper】
+		// 【com.ringyin.mapper.PetMapper】
 		daoType = new FullyQualifiedJavaType(introspectedTable.getMyBatis3JavaMapperType());
 
-		// 【com.roncoo.service.impl.PetDaoImpl】
+		// 【com.ringyin.service.impl.PetDaoImpl】
 		serviceType = new FullyQualifiedJavaType(daoImplPack + "." + tableName + "DaoImpl");
 
-		// 【com.roncoo.domain.Pet】
+		// 【com.ringyin.domain.Pet】
 		pojoType = new FullyQualifiedJavaType(pojoUrl + "." + tableName);
 
-		// 【com.roncoo.domain.Criteria】
+		// 【com.ringyin.domain.Criteria】
 		pojoCriteriaType = new FullyQualifiedJavaType(pojoUrl + "." + tableName + "Criteria");
 
-		// 【com.roncoo.domain.Example】
+		// 【com.ringyin.domain.Example】
 		pojoExampleType = new FullyQualifiedJavaType(pojoUrl + "." + tableName + "Example");
 
 		// 【java.util.List】
 		listType = new FullyQualifiedJavaType("java.util.List");
 
-		// 【com.roncoo.pay.common.custom.bjui.PageBjui】
+		// 【com.ringyin.common.page.Page】
 		pageType = new FullyQualifiedJavaType(pagePath);
 
-		// 【com.roncoo.pay.common.custom.bjui.PageUtil】
+		// 【com.ringyin.common.page.PageUtils】
 		pageUtilType = new FullyQualifiedJavaType(pageUtilPath);
+
+		// 【com.ringyin.common.core.dao.impl.BaseDaoImpl】
+		daoRootClassType = new FullyQualifiedJavaType(daoRootClass);
+		// 【com.ringyin.common.core.dao.BaseDao】
+		daoRootInterfaceType = new FullyQualifiedJavaType(daoRootInterface);
 
 		Interface interface1 = new Interface(interfaceType);
 		TopLevelClass topLevelClass = new TopLevelClass(serviceType);
+
+		if (enableDaoRootClass) {
+			FullyQualifiedJavaType superInterface = new FullyQualifiedJavaType("BaseDao<" + tableName + ">");
+			interface1.addSuperInterface(superInterface);
+
+			FullyQualifiedJavaType superClass = new FullyQualifiedJavaType("BaseDaoImpl<" + tableName + ">");
+			topLevelClass.setSuperClass(superClass);
+		}
 
 		// 导入必须的类
 		addImport(interface1, topLevelClass);
@@ -212,7 +240,8 @@ public class DaoPlugin extends PluginAdapter {
 	 * @param tableName
 	 * @param files
 	 */
-	protected void addService(Interface interface1, IntrospectedTable introspectedTable, String tableName, List<GeneratedJavaFile> files) {
+	protected void addService(Interface interface1, IntrospectedTable introspectedTable, String tableName,
+			List<GeneratedJavaFile> files) {
 		interface1.setVisibility(JavaVisibility.PUBLIC);
 		Method method = null;
 
@@ -247,7 +276,8 @@ public class DaoPlugin extends PluginAdapter {
 			interface1.addMethod(method);
 		}
 		if (enableUpdateByExampleSelective) {
-			method = getOtherInteger("updateByExampleSelective", "updateByExampleSelective", introspectedTable, tableName, 4);
+			method = getOtherInteger("updateByExampleSelective", "updateByExampleSelective", introspectedTable,
+					tableName, 4);
 			method.removeAllBodyLines();
 			interface1.addMethod(method);
 		}
@@ -289,7 +319,8 @@ public class DaoPlugin extends PluginAdapter {
 	 * @param tableName
 	 * @param files
 	 */
-	protected void addServiceImpl(TopLevelClass topLevelClass, IntrospectedTable introspectedTable, String tableName, List<GeneratedJavaFile> files) {
+	protected void addServiceImpl(TopLevelClass topLevelClass, IntrospectedTable introspectedTable, String tableName,
+			List<GeneratedJavaFile> files) {
 		topLevelClass.setVisibility(JavaVisibility.PUBLIC);
 		topLevelClass.addSuperInterface(interfaceType); // 实现类
 
@@ -305,35 +336,44 @@ public class DaoPlugin extends PluginAdapter {
 		 * type: pojo 1 ;key 2 ;example 3 ;pojo+example 4
 		 */
 		if (enableInsert) {
-			topLevelClass.addMethod(getOtherInsertboolean("insert", "insert", introspectedTable, tableName));
+			Method method = getOtherInsertboolean("insert", "insert", introspectedTable, tableName);
+			topLevelClass.addMethod(method);
 		}
 
 		if (enableInsertSelective) {
-			topLevelClass.addMethod(getOtherInsertboolean("save", "insertSelective", introspectedTable, tableName));
+			Method method = getOtherInsertboolean("save", "insertSelective", introspectedTable, tableName);
+			topLevelClass.addMethod(method);
+
 		}
 
 		if (enableDeleteByExample) {
-			topLevelClass.addMethod(getOtherInteger("deleteByExample", "deleteByExample", introspectedTable, tableName, 3));
+			topLevelClass
+					.addMethod(getOtherInteger("deleteByExample", "deleteByExample", introspectedTable, tableName, 3));
 		}
 
 		if (enableDeleteByPrimaryKey) {
-			topLevelClass.addMethod(getOtherInteger("deleteById", "deleteByPrimaryKey", introspectedTable, tableName, 2));
+			topLevelClass
+					.addMethod(getOtherInteger("deleteById", "deleteByPrimaryKey", introspectedTable, tableName, 2));
 		}
 
 		if (enableUpdateByPrimaryKeySelective) {
-			topLevelClass.addMethod(getOtherInteger("updateById", "updateByPrimaryKeySelective", introspectedTable, tableName, 1));
+			topLevelClass.addMethod(
+					getOtherInteger("updateById", "updateByPrimaryKeySelective", introspectedTable, tableName, 1));
 		}
 
 		if (enableUpdateByPrimaryKey) {
-			topLevelClass.addMethod(getOtherInteger("updateByPrimaryKey", "updateByPrimaryKey", introspectedTable, tableName, 1));
+			topLevelClass.addMethod(
+					getOtherInteger("updateByPrimaryKey", "updateByPrimaryKey", introspectedTable, tableName, 1));
 		}
 
 		if (enableUpdateByExampleSelective) {
-			topLevelClass.addMethod(getOtherInteger("updateByExampleSelective", "updateByExampleSelective", introspectedTable, tableName, 4));
+			topLevelClass.addMethod(getOtherInteger("updateByExampleSelective", "updateByExampleSelective",
+					introspectedTable, tableName, 4));
 		}
 
 		if (enableUpdateByExample) {
-			topLevelClass.addMethod(getOtherInteger("updateByExample", "updateByExample", introspectedTable, tableName, 4));
+			topLevelClass
+					.addMethod(getOtherInteger("updateByExample", "updateByExample", introspectedTable, tableName, 4));
 		}
 
 		// add method
@@ -383,7 +423,7 @@ public class DaoPlugin extends PluginAdapter {
 		method.setName("listForPage");
 		method.setReturnType(new FullyQualifiedJavaType("Page<" + tableName + ">"));
 		FullyQualifiedJavaType type = new FullyQualifiedJavaType("int");
-		method.addParameter(new Parameter(type, "pageCurrent"));
+		method.addParameter(new Parameter(type, "currentPage"));
 		method.addParameter(new Parameter(type, "pageSize"));
 		method.addParameter(new Parameter(pojoExampleType, "example"));
 		method.setVisibility(JavaVisibility.PUBLIC);
@@ -392,14 +432,14 @@ public class DaoPlugin extends PluginAdapter {
 		sb.append(getDaoShort());
 		sb.append("countByExample(example);");
 		method.addBodyLine(sb.toString());
-		method.addBodyLine("pageSize = PageUtil.checkPageSize(pageSize);");
-		method.addBodyLine("pageCurrent = PageUtil.checkPageCurrent(count, pageSize, pageCurrent);");
-		method.addBodyLine("int totalPage = PageUtil.countTotalPage(count, pageSize);");
-		method.addBodyLine("example.setLimitStart(PageUtil.countOffset(pageCurrent, pageSize));");
+		method.addBodyLine("pageSize = PageUtils.checkPageSize(pageSize);");
+		method.addBodyLine("currentPage = PageUtils.checkCurrentPage(count, pageSize, currentPage);");
+		method.addBodyLine("int totalPage = PageUtils.countTotalPage(count, pageSize);");
+		method.addBodyLine("example.setLimitStart(PageUtils.countOffset(currentPage, pageSize));");
 		method.addBodyLine("example.setPageSize(pageSize);");
 		StringBuilder sbs = new StringBuilder();
 		sbs.append("return new Page<" + tableName + ">(");
-		sbs.append("count, totalPage, pageCurrent, pageSize, this.");
+		sbs.append("count, totalPage, currentPage, pageSize, this.");
 		sbs.append(getDaoShort());
 		sbs.append("selectByExample(example));");
 		method.addBodyLine(sbs.toString());
@@ -496,7 +536,8 @@ public class DaoPlugin extends PluginAdapter {
 	 * @param type
 	 * @return
 	 */
-	protected Method getOtherInteger(String methodName1, String methodName, IntrospectedTable introspectedTable, String tableName, int type) {
+	protected Method getOtherInteger(String methodName1, String methodName, IntrospectedTable introspectedTable,
+			String tableName, int type) {
 		Method method = new Method();
 		method.setName(methodName1);
 		method.setReturnType(FullyQualifiedJavaType.getIntInstance());
@@ -505,7 +546,9 @@ public class DaoPlugin extends PluginAdapter {
 		StringBuilder sb = new StringBuilder();
 		sb.append("return this.");
 		sb.append(getDaoShort());
-		if (introspectedTable.hasBLOBColumns() && (!"updateByPrimaryKeySelective".equals(methodName) && !"deleteByPrimaryKey".equals(methodName) && !"deleteByExample".equals(methodName) && !"updateByExampleSelective".equals(methodName))) {
+		if (introspectedTable.hasBLOBColumns()
+				&& (!"updateByPrimaryKeySelective".equals(methodName) && !"deleteByPrimaryKey".equals(methodName)
+						&& !"deleteByExample".equals(methodName) && !"updateByExampleSelective".equals(methodName))) {
 			sb.append(methodName + "WithoutBLOBs");
 		} else {
 			sb.append(methodName);
@@ -521,8 +564,15 @@ public class DaoPlugin extends PluginAdapter {
 	 * add method
 	 * 
 	 */
-	protected Method getOtherInsertboolean(String methodName1, String methodName, IntrospectedTable introspectedTable, String tableName) {
+	protected Method getOtherInsertboolean(String methodName1, String methodName, IntrospectedTable introspectedTable,
+			String tableName) {
 		Method method = new Method();
+		/**
+		 * 统一处理实体id
+		 */
+		if (enableDaoRootClass) {
+			method.addBodyLine("processGlobalEntityId(record);");
+		}
 		method.setName(methodName1);
 		method.setReturnType(returnType);
 		method.addParameter(new Parameter(pojoType, "record"));
@@ -568,11 +618,13 @@ public class DaoPlugin extends PluginAdapter {
 			sb.setLength(sb.length() - 1);
 			return sb.toString();
 		case 3:
-			method.addParameter(new Parameter(pojoCriteriaType, "example"));
+			//method.addParameter(new Parameter(pojoCriteriaType, "example"));
+			method.addParameter(new Parameter(pojoExampleType, "example"));
 			return "example";
 		case 4:
 			method.addParameter(0, new Parameter(pojoType, "record"));
-			method.addParameter(1, new Parameter(pojoCriteriaType, "example"));
+			method.addParameter(1, new Parameter(pojoExampleType, "example"));
+			//method.addParameter(1, new Parameter(pojoCriteriaType, "example"));
 			return "record, example";
 		case 5:
 			method.addParameter(1, new Parameter(pojoExampleType, "example"));
@@ -586,7 +638,16 @@ public class DaoPlugin extends PluginAdapter {
 	protected void addComment(JavaElement field, String comment) {
 		StringBuilder sb = new StringBuilder();
 		field.addJavaDocLine("/**");
-		sb.append(" * ");
+		sb.append(" * <ul>");
+		sb.append(" * <li>Title: </li>");
+		sb.append(" * <li>Description: </li>");
+		sb.append(" * <li>Copyright: Kony Li</li>");
+		sb.append(" * <li>Company:ShenZhen Ringyin Tech Co.,Ltd.</li>");
+		sb.append(" * </ul>");
+		sb.append(" * @author Kony.Lee");
+		sb.append(" * @version ringyin-1.0.0");
+		sb.append(" * @since JDK-1.8.0_172");
+		sb.append(" * @date " + Calendar.getInstance().getTime());
 		comment = comment.replaceAll("\n", "<br>\n\t * ");
 		sb.append(comment);
 		field.addJavaDocLine(sb.toString());
@@ -716,6 +777,9 @@ public class DaoPlugin extends PluginAdapter {
 			interfaces.addImportedType(pojoExampleType);
 			interfaces.addImportedType(pageType);
 		}
+		if (enableDaoRootClass) {
+			interfaces.addImportedType(daoRootInterfaceType);
+		}
 		interfaces.addImportedType(pojoType);
 
 		// 实现类
@@ -728,6 +792,11 @@ public class DaoPlugin extends PluginAdapter {
 			topLevelClass.addImportedType(pageType);
 			topLevelClass.addImportedType(pageUtilType);
 		}
+
+		if (enableDaoRootClass) {
+			topLevelClass.addImportedType(daoRootClassType);
+		}
+
 		topLevelClass.addImportedType(daoType); // mapper
 		topLevelClass.addImportedType(interfaceType);
 		topLevelClass.addImportedType(pojoType);
@@ -757,7 +826,8 @@ public class DaoPlugin extends PluginAdapter {
 	}
 
 	@Override
-	public boolean clientInsertMethodGenerated(Method method, Interface interfaze, IntrospectedTable introspectedTable) {
+	public boolean clientInsertMethodGenerated(Method method, Interface interfaze,
+			IntrospectedTable introspectedTable) {
 		returnType = method.getReturnType();
 		return true;
 	}

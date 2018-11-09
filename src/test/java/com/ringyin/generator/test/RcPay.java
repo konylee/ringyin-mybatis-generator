@@ -1,4 +1,4 @@
-package com.roncoo.test;
+package com.ringyin.generator.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +22,12 @@ import org.mybatis.generator.internal.DefaultShellCallback;
 public class RcPay {
 	private static Logger logger = Logger.getLogger(RcPay.class);
 
-	public static void main(String[] args) throws IOException, XMLParserException, InvalidConfigurationException, SQLException, InterruptedException {
+	public static void main(String[] args)
+			throws IOException, XMLParserException, InvalidConfigurationException, SQLException, InterruptedException {
 		logger.info("Start generator ...");
 		List<String> warnings = new ArrayList<String>();
 		boolean overwrite = true; // 是否覆盖原来的文件
-		File configFile = new File("D:/workspace/roncoo-mybatis-generator/src/test/resources/rc-pay.xml");
+		File configFile = new File("D:/devspace/roncoo/roncoo-mybatis-generator/src/test/resources/rc-pay.xml");
 		ConfigurationParser cp = new ConfigurationParser(warnings);
 		Configuration config = cp.parseConfiguration(configFile);
 		DefaultShellCallback callback = new DefaultShellCallback(overwrite);

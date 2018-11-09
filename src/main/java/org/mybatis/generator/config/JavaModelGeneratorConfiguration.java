@@ -28,57 +28,77 @@ import org.mybatis.generator.api.dom.xml.XmlElement;
  */
 public class JavaModelGeneratorConfiguration extends PropertyHolder {
 
-    private String targetPackage;
+	private String targetPackage;
 
-    private String targetProject;
+	private String targetProject;
 
-    /**
-     * 
-     */
-    public JavaModelGeneratorConfiguration() {
-        super();
-    }
+	private String baseClass;
 
-    public String getTargetProject() {
-        return targetProject;
-    }
+	/**
+	 * @return the baseClass
+	 */
+	public String getBaseClass() {
+		return baseClass;
+	}
 
-    public void setTargetProject(String targetProject) {
-        this.targetProject = targetProject;
-    }
+	/**
+	 * @param baseClass the baseClass to set
+	 */
+	public void setBaseClass(String baseClass) {
+		this.baseClass = baseClass;
+	}
 
-    public String getTargetPackage() {
-        return targetPackage;
-    }
+	/**
+	 * 
+	 */
+	public JavaModelGeneratorConfiguration() {
+		super();
+	}
 
-    public void setTargetPackage(String targetPackage) {
-        this.targetPackage = targetPackage;
-    }
+	public String getTargetProject() {
+		return targetProject;
+	}
 
-    public XmlElement toXmlElement() {
-        XmlElement answer = new XmlElement("javaModelGenerator"); //$NON-NLS-1$
+	public void setTargetProject(String targetProject) {
+		this.targetProject = targetProject;
+	}
 
-        if (targetPackage != null) {
-            answer.addAttribute(new Attribute("targetPackage", targetPackage)); //$NON-NLS-1$
-        }
+	public String getTargetPackage() {
+		return targetPackage;
+	}
 
-        if (targetProject != null) {
-            answer.addAttribute(new Attribute("targetProject", targetProject)); //$NON-NLS-1$
-        }
+	public void setTargetPackage(String targetPackage) {
+		this.targetPackage = targetPackage;
+	}
 
-        addPropertyXmlElements(answer);
+	public XmlElement toXmlElement() {
+		XmlElement answer = new XmlElement("javaModelGenerator"); //$NON-NLS-1$
 
-        return answer;
-    }
+		if (targetPackage != null) {
+			answer.addAttribute(new Attribute("targetPackage", targetPackage)); //$NON-NLS-1$
+		}
 
-    public void validate(List<String> errors, String contextId) {
-        if (!stringHasValue(targetProject)) {
-            errors.add(getString("ValidationError.0", contextId)); //$NON-NLS-1$
-        }
+		if (targetProject != null) {
+			answer.addAttribute(new Attribute("targetProject", targetProject)); //$NON-NLS-1$
+		}
 
-        if (!stringHasValue(targetPackage)) {
-            errors.add(getString("ValidationError.12", //$NON-NLS-1$
-                    "JavaModelGenerator", contextId)); //$NON-NLS-1$
-        }
-    }
+		if (baseClass != null) {
+			answer.addAttribute(new Attribute("baseClass", baseClass)); //$NON-NLS-1$
+		}
+
+		addPropertyXmlElements(answer);
+
+		return answer;
+	}
+
+	public void validate(List<String> errors, String contextId) {
+		if (!stringHasValue(targetProject)) {
+			errors.add(getString("ValidationError.0", contextId)); //$NON-NLS-1$
+		}
+
+		if (!stringHasValue(targetPackage)) {
+			errors.add(getString("ValidationError.12", //$NON-NLS-1$
+					"JavaModelGenerator", contextId)); //$NON-NLS-1$
+		}
+	}
 }
